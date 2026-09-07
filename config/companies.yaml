@@ -1,0 +1,48 @@
+# Target company list for the discovery pipeline.
+#
+# ats:     greenhouse | lever | ashby   (smartrecruiters/workday not yet implemented — see README)
+# token:   the board slug — for Greenhouse it's the boards.greenhouse.io/{token} slug,
+#          for Lever it's the jobs.lever.co/{token} slug, for Ashby it's jobs.ashbyhq.com/{token}.
+#          Find it by opening the company's careers page and looking at the URL, or the
+#          "Apply" links, which usually point straight at the ATS-hosted board.
+# country: ISO-ish label used for the Part 2.1 country weighting — free text is fine for now.
+#
+# The three entries below are REAL, LIVE company boards used only to prove the pipeline
+# runs end-to-end (confirmed via public API docs/examples as of this build). They are not
+# EU27 companies and should be deleted once you've populated real Big-5 targets.
+#
+# Everything under "eu27_targets_todo" is a placeholder — these are the companies named in
+# Issue #0's manual research pass, with tokens left blank because the ATS platform/slug for
+# each was not confirmed in this build. Fill in `token` (and correct `ats` if wrong) before
+# relying on them; do not guess a token and assume it resolves.
+
+companies:
+  # --- demo/smoke-test entries (non-EU27, delete before real use) ---
+  - company: stripe
+    ats: greenhouse
+    token: stripe
+    country: "DEMO"
+  - company: monzo
+    ats: greenhouse
+    token: monzo
+    country: "DEMO"
+
+  # --- EU27 targets from Issue #0 — tokens intentionally blank, confirm before use ---
+  # - company: QuantCo
+  #   ats: ""        # TODO: confirm ATS platform
+  #   token: ""       # TODO: confirm board slug
+  #   country: "DE"
+  # - company: Clera
+  #   ats: ""
+  #   token: ""
+  #   country: "DE"
+  # - company: GenPeach AI
+  #   ats: ""
+  #   token: ""
+  #   country: "PL"
+  # - company: Qonto
+  #   ats: ""
+  #   token: ""
+  #   country: "DE"
+  # ... continue for the rest of the Part III target list, plus new Big-5 sourcing
+  #     beyond the original seven companies as the target list grows.

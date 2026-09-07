@@ -1,0 +1,24 @@
+[
+  {
+    "id": "abc-123",
+    "text": "Senior Frontend Engineer",
+    "createdAt": 1735689600000,
+    "categories": {"location": "Amsterdam, Netherlands", "team": "Engineering"},
+    "descriptionPlain": "Join our frontend team building the core product.",
+    "description": "Join our frontend team building the core product.",
+    "lists": [
+      {"text": "Application Questions", "content": "Do you now or in the future require visa sponsorship to work in the Netherlands?"}
+    ],
+    "hostedUrl": "https://jobs.lever.co/democo/abc-123"
+  },
+  {
+    "id": "def-456",
+    "text": "Sales Development Representative",
+    "createdAt": 1735689600000,
+    "categories": {"location": "Amsterdam, Netherlands", "team": "Sales"},
+    "descriptionPlain": "Join our sales team.",
+    "description": "Join our sales team.",
+    "lists": [],
+    "hostedUrl": "https://jobs.lever.co/democo/def-456"
+  }
+]

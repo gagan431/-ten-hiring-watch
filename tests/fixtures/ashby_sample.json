@@ -1,0 +1,14 @@
+{
+  "jobs": [
+    {
+      "id": "xyz-789",
+      "title": "AI Research Engineer",
+      "department": "Research",
+      "location": "Warsaw, Poland",
+      "isRemote": false,
+      "publishedAt": "2026-08-30T09:00:00Z",
+      "jobUrl": "https://jobs.ashbyhq.com/democo/xyz-789",
+      "descriptionHtml": "<p>Specialised research role. Visa sponsorship where applicable, relocation assistance to Poland.</p>"
+    }
+  ]
+}

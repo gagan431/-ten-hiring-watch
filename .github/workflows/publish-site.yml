@@ -1,0 +1,59 @@
+name: Publish Site
+
+# Part IV: builds the evergreen per-vacancy pages + issue index from whatever
+# classified CSV(s) exist in review/*-classified.csv, and deploys to GitHub Pages.
+# Triggered manually or on push to main once a human has finished classifying a
+# queue and renamed/saved it as review/queue-YYYY-MM-DD-classified.csv.
+
+on:
+  workflow_dispatch:
+    inputs:
+      classified_csv:
+        description: "Path to the classified review CSV, e.g. review/queue-2026-09-07-classified.csv"
+        required: true
+  push:
+    branches: [main]
+    paths:
+      - "review/*-classified.csv"
+
+permissions:
+  contents: read
+  pages: write
+  id-token: write
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+      - run: pip install -r requirements.txt
+
+      - name: Find classified CSV
+        id: find_csv
+        run: |
+          if [ -n "${{ inputs.classified_csv }}" ]; then
+            echo "csv=${{ inputs.classified_csv }}" >> "$GITHUB_OUTPUT"
+          else
+            latest=$(ls -t review/*-classified.csv | head -n1)
+            echo "csv=$latest" >> "$GITHUB_OUTPUT"
+          fi
+
+      - name: Build site
+        run: python -m ten_watch.site.build_site "${{ steps.find_csv.outputs.csv }}"
+
+      - uses: actions/upload-pages-artifact@v3
+        with:
+          path: site/output
+
+  deploy:
+    needs: build
+    runs-on: ubuntu-latest
+    environment:
+      name: github-pages
+      url: ${{ steps.deployment.outputs.page_url }}
+    steps:
+      - id: deployment
+        uses: actions/deploy-pages@v4
