@@ -1,15 +1,13 @@
 name: Weekly Discovery Run
 
-# Part VI, Phase 1: runs the automated discovery/flag/dedupe pipeline on a schedule
-# and opens a PR with the new review queue. Nothing here classifies anything — a
-# human reviews the CSV in the PR diff, fills in tier/access_mechanism/editorial_note
-# etc. as commits on that branch, and merges when it's ready. GitHub's own PR review
-# IS the human-review step from Part II.5 — no separate tool needed.
+# Phase 1: run discovery and open a PR containing both confirmed-EU27 review
+# candidates and any access-signal roles whose geography still needs resolution.
+# Nothing here classifies A/B/C/D; that remains human review.
 
 on:
   schedule:
-    - cron: "0 6 * * 1"  # Monday 06:00 UTC — start of the Part II.1 research window
-  workflow_dispatch: {}   # manual trigger for testing / off-cycle runs
+    - cron: "0 6 * * 1"
+  workflow_dispatch: {}
 
 jobs:
   discover:
@@ -27,16 +25,25 @@ jobs:
       - name: Run discovery pipeline
         run: python -m ten_watch.pipeline.build_review_queue
 
-      - name: Open PR with new review queue
+      - name: Open PR with new discovery queues
         uses: peter-evans/create-pull-request@v6
         with:
-          commit-message: "Weekly discovery run: new review queue"
+          commit-message: "Weekly discovery run: new review queues"
           title: "Review queue — week of ${{ github.run_id }}"
           body: |
-            Automated discovery run. Nothing in this PR has been classified — every
-            HUMAN field in the schema (tier, access_mechanism, profession, editorial_note...)
-            is blank. Fill those in directly in this PR (edit the CSV, or check it out
-            locally) and merge once each row has passed Gates 1-8 in docs/OPERATING_MODEL.md.
+            Automated discovery run.
+
+            `review/queue-*.csv` contains only confirmed-EU27 vacancies with an
+            immigration/access phrase match.
+
+            `review/location-resolution-*.csv` contains phrase-matched vacancies whose
+            geography is unknown or ambiguous and must be resolved before they can enter
+            the EU27 human review queue.
+
+            No A/B/C/D classification is automatic. Fill the human review fields and
+            merge only after the relevant editorial gates are satisfied.
           branch: review/auto-${{ github.run_number }}
           base: main
-          add-paths: review/*.csv
+          add-paths: |
+            review/queue-*.csv
+            review/location-resolution-*.csv
