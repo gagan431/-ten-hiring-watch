@@ -1,8 +1,7 @@
 """
 Tests run WITHOUT hitting real ATS endpoints — `requests.get` is monkeypatched to return
 the fixture JSON, so this exercises the actual parsing/flagging/dedupe code, just not
-live network calls. (This build's sandbox couldn't reach boards-api.greenhouse.io etc.
-directly — see README for how to smoke-test against the real APIs.)
+live network calls.
 """
 
 import json
@@ -34,7 +33,6 @@ class FakeResponse:
 
 @pytest.fixture
 def mock_get(monkeypatch):
-    """Patches requests.get in each scraper module to serve fixture JSON."""
     def _install(module, fixture_file):
         payload = json.loads((FIXTURES / fixture_file).read_text())
         def fake_get(url, params=None, timeout=None):
@@ -49,7 +47,7 @@ def test_greenhouse_parses_fixture_and_unescapes_html(mock_get):
     jobs = fetch_greenhouse_jobs("democo")
     assert len(jobs) == 2
     backend = next(j for j in jobs if j["role"] == "Software Engineer, Backend")
-    assert "<p>" in backend["description_text"]  # unescaped, not &lt;p&gt;
+    assert "<p>" in backend["description_text"]
     assert "visa sponsorship" in backend["description_text"].lower()
 
 
@@ -59,7 +57,6 @@ def test_lever_parses_fixture_including_lists_field(mock_get):
     jobs = fetch_lever_jobs("democo")
     assert len(jobs) == 2
     fe = next(j for j in jobs if j["role"] == "Senior Frontend Engineer")
-    # the sponsorship question lives in `lists`, not the main description — must be captured
     assert "visa sponsorship" in fe["description_text"].lower()
 
 
@@ -72,12 +69,33 @@ def test_ashby_parses_fixture_and_strips_html(mock_get):
     assert "poland" in jobs[0]["description_text"].lower()
 
 
-def test_flag_keywords_finds_relevant_terms():
+def test_flag_keywords_finds_relevant_access_phrases():
     text = "Relocation support including visa sponsorship and housing assistance is available."
     matched = flag_keywords(text)
-    assert "visa" in matched
-    assert "sponsorship" in matched
-    assert "relocation" in matched
+    assert "visa sponsorship" in matched
+    assert "relocation support" in matched
+
+
+@pytest.mark.parametrize("text", [
+    "We ensure compliance with Visa, Mastercard and other card-network rules.",
+    "Act as the executive sponsor for the strategic programme.",
+    "Experience with sports marketing and sponsorship activations is preferred.",
+    "Own conference sponsorships and event partnerships across EMEA.",
+    "Work with BIN sponsor requirements and payment partners.",
+])
+def test_flag_keywords_rejects_business_false_positives(text):
+    assert flag_keywords(text) == []
+
+
+@pytest.mark.parametrize("text, expected", [
+    ("Visa sponsorship is available for eligible candidates.", "visa sponsorship"),
+    ("Do you require sponsorship to work in Germany?", "require sponsorship"),
+    ("You must already have the right to work in Ireland.", "right to work"),
+    ("Relocation assistance is available for candidates moving to Warsaw.", "relocation assistance"),
+    ("Based in or willing to relocate to Madrid, Spain.", "relocate to"),
+])
+def test_flag_keywords_accepts_candidate_access_language(text, expected):
+    assert expected in flag_keywords(text)
 
 
 def test_flag_keywords_ignores_irrelevant_text():
@@ -86,14 +104,14 @@ def test_flag_keywords_ignores_irrelevant_text():
 
 def test_extract_snippet_returns_context_around_match():
     text = "Some intro text. Do you require visa sponsorship to work in Germany? More text after."
-    snippet = extract_snippet(text, "visa", window=40)
-    assert "visa" in snippet.lower()
+    snippet = extract_snippet(text, "visa sponsorship", window=60)
+    assert "visa sponsorship" in snippet.lower()
 
 
 def test_dedupe_collapses_identical_company_role_location():
     jobs = [
         {"company": "democo", "role": "Backend Engineer", "city_raw": "Berlin"},
-        {"company": "DemoCo", "role": "backend engineer", "city_raw": "berlin"},  # same, different case
+        {"company": "DemoCo", "role": "backend engineer", "city_raw": "berlin"},
         {"company": "democo", "role": "Frontend Engineer", "city_raw": "Berlin"},
     ]
     result = dedupe(jobs)
@@ -109,19 +127,11 @@ def test_dedupe_key_is_stable_and_case_insensitive():
 def test_flag_job_end_to_end_on_sponsorship_role():
     job = {"description_text": "We offer visa sponsorship for this role in Munich."}
     flagged = flag_job(job)
-    assert "visa" in flagged["matched_keywords"]
+    assert "visa sponsorship" in flagged["matched_keywords"]
     assert flagged["evidence_snippet"] != ""
 
 
 def test_orchestrator_rejects_non_eu_jobs_from_a_global_company_board(monkeypatch):
-    """
-    Permanent regression test for the exact bug the review found: a company
-    configured with a single country hint whose Greenhouse board actually spans
-    DE/GB/US must NOT tag every job with the config country. Only the genuinely
-    EU27 vacancy should survive, and it must carry the human-configured company
-    display name, not the raw ATS token.
-    """
-    import json
     import ten_watch.scrapers.greenhouse as gh
     from ten_watch.pipeline.build_review_queue import run
 
@@ -139,5 +149,34 @@ def test_orchestrator_rejects_non_eu_jobs_from_a_global_company_board(monkeypatc
 
     assert len(jobs) == 1
     assert jobs[0]["country"] == "DE"
-    assert jobs[0]["company"] == "GlobalCo"        # configured name, not "globalco"
+    assert jobs[0]["company"] == "GlobalCo"
     assert "Berlin" in jobs[0]["city_raw"]
+
+
+def test_orchestrator_routes_unknown_location_out_of_main_review(monkeypatch):
+    import ten_watch.pipeline.build_review_queue as brq
+
+    jobs = [
+        {
+            "role": "Backend Engineer",
+            "city_raw": "Berlin, Germany",
+            "description_text": "Visa sponsorship is available.",
+            "source_ats": "greenhouse",
+        },
+        {
+            "role": "Platform Engineer",
+            "city_raw": "Remote",
+            "description_text": "Visa sponsorship is available.",
+            "source_ats": "greenhouse",
+        },
+    ]
+
+    monkeypatch.setitem(brq.SCRAPERS, "greenhouse", lambda token: [dict(j) for j in jobs])
+    companies = [{"company": "GlobalCo", "ats": "greenhouse", "token": "globalco"}]
+
+    review, unresolved = brq.run_with_unresolved(companies)
+
+    assert len(review) == 1
+    assert review[0]["country"] == "DE"
+    assert len(unresolved) == 1
+    assert unresolved[0]["country"].startswith("UNKNOWN")
