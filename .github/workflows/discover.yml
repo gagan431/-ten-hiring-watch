@@ -38,4 +38,5 @@ jobs:
             is blank. Fill those in directly in this PR (edit the CSV, or check it out
             locally) and merge once each row has passed Gates 1-8 in docs/OPERATING_MODEL.md.
           branch: review/auto-${{ github.run_number }}
+          base: main
           add-paths: review/*.csv

@@ -1,0 +1,29 @@
+{
+  "meta": {"total": 3},
+  "jobs": [
+    {
+      "id": 2001,
+      "title": "Backend Engineer",
+      "updated_at": "2026-09-01T10:00:00-05:00",
+      "location": {"name": "Berlin, Germany"},
+      "absolute_url": "https://boards.greenhouse.io/globalco/jobs/2001",
+      "content": "&lt;p&gt;We offer visa sponsorship and relocation support for this Berlin-based role.&lt;/p&gt;"
+    },
+    {
+      "id": 2002,
+      "title": "Backend Engineer",
+      "updated_at": "2026-09-01T10:00:00-05:00",
+      "location": {"name": "London, United Kingdom"},
+      "absolute_url": "https://boards.greenhouse.io/globalco/jobs/2002",
+      "content": "&lt;p&gt;We offer visa sponsorship and relocation support for this London-based role.&lt;/p&gt;"
+    },
+    {
+      "id": 2003,
+      "title": "Backend Engineer",
+      "updated_at": "2026-09-01T10:00:00-05:00",
+      "location": {"name": "New York, USA"},
+      "absolute_url": "https://boards.greenhouse.io/globalco/jobs/2003",
+      "content": "&lt;p&gt;We offer visa sponsorship and relocation support for this New York-based role.&lt;/p&gt;"
+    }
+  ]
+}

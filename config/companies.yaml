@@ -1,48 +1,50 @@
 # Target company list for the discovery pipeline.
 #
-# ats:     greenhouse | lever | ashby   (smartrecruiters/workday not yet implemented — see README)
-# token:   the board slug — for Greenhouse it's the boards.greenhouse.io/{token} slug,
-#          for Lever it's the jobs.lever.co/{token} slug, for Ashby it's jobs.ashbyhq.com/{token}.
-#          Find it by opening the company's careers page and looking at the URL, or the
-#          "Apply" links, which usually point straight at the ATS-hosted board.
-# country: ISO-ish label used for the Part 2.1 country weighting — free text is fine for now.
+# ats:              greenhouse | lever | ashby   (smartrecruiters/workday not yet implemented)
+# token:             the board slug — for Greenhouse it's the boards.greenhouse.io/{token} slug,
+#                    for Lever it's the jobs.lever.co/{token} slug, for Ashby it's jobs.ashbyhq.com/{token}.
+# target_countries:  INFORMATIONAL ONLY. This is what markets you expect this company's
+#                    board to contain — it is NOT used to tag vacancies (that was a real bug
+#                    in the first version: every job from a company got the company's config
+#                    country regardless of its actual location). Real per-vacancy country is
+#                    inferred from each job's own location text by
+#                    ten_watch/pipeline/geography.py. Use target_countries as a note to
+#                    yourself, or later as a mismatch check ("this board returned zero DE
+#                    roles even though we expected some — check the token").
 #
-# The three entries below are REAL, LIVE company boards used only to prove the pipeline
-# runs end-to-end (confirmed via public API docs/examples as of this build). They are not
-# EU27 companies and should be deleted once you've populated real Big-5 targets.
-#
-# Everything under "eu27_targets_todo" is a placeholder — these are the companies named in
-# Issue #0's manual research pass, with tokens left blank because the ATS platform/slug for
-# each was not confirmed in this build. Fill in `token` (and correct `ats` if wrong) before
-# relying on them; do not guess a token and assume it resolves.
+# The two entries below are REAL, LIVE company boards used only to prove the pipeline runs
+# end-to-end. They are not EU27 companies and should be deleted once real Big-5 targets are
+# populated below them.
 
 companies:
   # --- demo/smoke-test entries (non-EU27, delete before real use) ---
-  - company: stripe
+  - company: Stripe
     ats: greenhouse
     token: stripe
-    country: "DEMO"
-  - company: monzo
+    target_countries: ["US", "IE"]   # Stripe does have a Dublin office — good real test of
+                                      # per-vacancy filtering actually working, not just the
+                                      # config label.
+  - company: Monzo
     ats: greenhouse
     token: monzo
-    country: "DEMO"
+    target_countries: ["GB"]
 
   # --- EU27 targets from Issue #0 — tokens intentionally blank, confirm before use ---
   # - company: QuantCo
   #   ats: ""        # TODO: confirm ATS platform
   #   token: ""       # TODO: confirm board slug
-  #   country: "DE"
+  #   target_countries: ["DE"]
   # - company: Clera
   #   ats: ""
   #   token: ""
-  #   country: "DE"
+  #   target_countries: ["DE"]
   # - company: GenPeach AI
   #   ats: ""
   #   token: ""
-  #   country: "PL"
+  #   target_countries: ["PL"]
   # - company: Qonto
   #   ats: ""
   #   token: ""
-  #   country: "DE"
+  #   target_countries: ["DE", "NL"]
   # ... continue for the rest of the Part III target list, plus new Big-5 sourcing
   #     beyond the original seven companies as the target list grows.

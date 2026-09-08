@@ -111,3 +111,33 @@ def test_flag_job_end_to_end_on_sponsorship_role():
     flagged = flag_job(job)
     assert "visa" in flagged["matched_keywords"]
     assert flagged["evidence_snippet"] != ""
+
+
+def test_orchestrator_rejects_non_eu_jobs_from_a_global_company_board(monkeypatch):
+    """
+    Permanent regression test for the exact bug the review found: a company
+    configured with a single country hint whose Greenhouse board actually spans
+    DE/GB/US must NOT tag every job with the config country. Only the genuinely
+    EU27 vacancy should survive, and it must carry the human-configured company
+    display name, not the raw ATS token.
+    """
+    import json
+    import ten_watch.scrapers.greenhouse as gh
+    from ten_watch.pipeline.build_review_queue import run
+
+    payload = json.loads((FIXTURES / "greenhouse_mixed_locations.json").read_text())
+
+    def fake_get(url, params=None, timeout=None):
+        return FakeResponse(payload)
+    monkeypatch.setattr(gh, "requests", type(
+        "M", (), {"get": staticmethod(fake_get), "RequestException": Exception}
+    ))
+
+    companies = [{"company": "GlobalCo", "ats": "greenhouse", "token": "globalco",
+                  "target_countries": ["DE"]}]
+    jobs = run(companies)
+
+    assert len(jobs) == 1
+    assert jobs[0]["country"] == "DE"
+    assert jobs[0]["company"] == "GlobalCo"        # configured name, not "globalco"
+    assert "Berlin" in jobs[0]["city_raw"]
