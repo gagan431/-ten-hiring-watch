@@ -1,50 +1,86 @@
-# Target company list for the discovery pipeline.
+# Live ATS target company list for TEN International Hiring Watch — EU27.
 #
-# ats:              greenhouse | lever | ashby   (smartrecruiters/workday not yet implemented)
-# token:             the board slug — for Greenhouse it's the boards.greenhouse.io/{token} slug,
-#                    for Lever it's the jobs.lever.co/{token} slug, for Ashby it's jobs.ashbyhq.com/{token}.
-# target_countries:  INFORMATIONAL ONLY. This is what markets you expect this company's
-#                    board to contain — it is NOT used to tag vacancies (that was a real bug
-#                    in the first version: every job from a company got the company's config
-#                    country regardless of its actual location). Real per-vacancy country is
-#                    inferred from each job's own location text by
-#                    ten_watch/pipeline/geography.py. Use target_countries as a note to
-#                    yourself, or later as a mismatch check ("this board returned zero DE
-#                    roles even though we expected some — check the token").
+# ats:              greenhouse | lever | ashby
+# token:            board slug used by the ATS scraper
+# target_countries: informational expectation only. Per-vacancy country is always
+#                   inferred from each vacancy's own location text.
 #
-# The two entries below are REAL, LIVE company boards used only to prove the pipeline runs
-# end-to-end. They are not EU27 companies and should be deleted once real Big-5 targets are
-# populated below them.
+# This list was manually verified against live employer ATS boards on 2026-09-08.
+# It intentionally mixes Big-5 markets and several professions. Publication remains
+# evidence-led: discovery only queues candidates; humans still classify A/B/C/D.
 
 companies:
-  # --- demo/smoke-test entries (non-EU27, delete before real use) ---
-  - company: Stripe
+  # Germany
+  - company: NavVis
     ats: greenhouse
-    token: stripe
-    target_countries: ["US", "IE"]   # Stripe does have a Dublin office — good real test of
-                                      # per-vacancy filtering actually working, not just the
-                                      # config label.
-  - company: Monzo
-    ats: greenhouse
-    token: monzo
-    target_countries: ["GB"]
+    token: navvis
+    target_countries: ["DE"]
 
-  # --- EU27 targets from Issue #0 — tokens intentionally blank, confirm before use ---
-  # - company: QuantCo
-  #   ats: ""        # TODO: confirm ATS platform
-  #   token: ""       # TODO: confirm board slug
-  #   target_countries: ["DE"]
-  # - company: Clera
-  #   ats: ""
-  #   token: ""
-  #   target_countries: ["DE"]
-  # - company: GenPeach AI
-  #   ats: ""
-  #   token: ""
-  #   target_countries: ["PL"]
-  # - company: Qonto
-  #   ats: ""
-  #   token: ""
-  #   target_countries: ["DE", "NL"]
-  # ... continue for the rest of the Part III target list, plus new Big-5 sourcing
-  #     beyond the original seven companies as the target list grows.
+  - company: IDnow
+    ats: greenhouse
+    token: idnow
+    target_countries: ["DE"]
+
+  - company: Catapult Sports
+    ats: greenhouse
+    token: catapultsports
+    target_countries: ["DE"]
+
+  - company: Qonto
+    ats: lever
+    token: qonto
+    target_countries: ["DE", "NL"]
+
+  - company: Readdle
+    ats: greenhouse
+    token: readdle70
+    target_countries: ["DE", "PL"]
+
+  # Ireland
+  - company: AccountsIQ
+    ats: greenhouse
+    token: accountsiq
+    target_countries: ["IE"]
+
+  - company: CFGI
+    ats: lever
+    token: cfgi
+    target_countries: ["IE"]
+
+  - company: Oomnitza
+    ats: lever
+    token: oomnitza
+    target_countries: ["IE"]
+
+  # Netherlands
+  - company: Workwize
+    ats: greenhouse
+    token: workwize
+    target_countries: ["NL"]
+
+  - company: Insify
+    ats: lever
+    token: insify
+    target_countries: ["NL"]
+
+  - company: Overstory
+    ats: greenhouse
+    token: overstory
+    target_countries: ["NL", "IE"]
+
+  # Austria
+  - company: Ketryx
+    ats: greenhouse
+    token: ketryx
+    target_countries: ["AT"]
+
+  # Poland
+  - company: Box
+    ats: greenhouse
+    token: boxinc
+    target_countries: ["PL"]
+
+  - company: IDT
+    ats: lever
+    token: idt
+    target_countries: ["PL"]
